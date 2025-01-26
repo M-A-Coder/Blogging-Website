@@ -1,0 +1,32 @@
+name: deploy-development
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  build-develop-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+      - name: build website
+        run: |
+          npx parcel build "./src/*.html" --dist-dir "./dev" --public-url "./"
+      - name: upload artifact
+        uses: actions/build-page-artifect@v3
+        with:
+          path: "./dev"
+          name: "build-artifact-develop"
+  deploy-develop-job:
+    needs: "build-develop-job"
+    environment: "development-env"
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy artifacts on Github Pages
+        uses: actions/deploy-pages@v4
+        with:
+          name: "build-artifact-develop"
+          token: ${{github.token}}
